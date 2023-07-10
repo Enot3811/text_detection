@@ -1,0 +1,1 @@
+Text detection with R-CNN and coco text dataset.
