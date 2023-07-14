@@ -20,8 +20,8 @@ def main():
     name2index = {'pad': -1, 'legible': 0, 'illegible': 1}
     index2name = {-1: 'pad', 0: 'legible', 1: 'illegible'}  # noqa
 
-    mean = torch.tensor([0.46614146, 0.44434145, 0.41298008])
-    std = torch.tensor([0.25185052, 0.24620004, 0.24949865])
+    mean = torch.tensor([0.46201408, 0.44023338, 0.40830722])
+    std = torch.tensor([0.2513935, 0.24573067, 0.24901628])
     transf = transforms.Compose([
         ToTensor(),
         Resize(448),
