@@ -6,6 +6,7 @@ import sys
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard.writer import SummaryWriter
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
@@ -28,12 +29,30 @@ def main():
     backbone_model = 'resnet50'
 
     # Get training parameters
-    lr = 0.001
-    epochs = 35
+    lr = 0.0001
     b_size = 8
     n_workers = 8
+    weight_decay = 1e-3
     device = 'cuda'
+    continue_training = True
+    end_ep = 20
+
+    # Prepare some stuff
     device = torch.device(device=device)
+    work_dir = Path('work_dir') / 'train_1'
+    work_dir.mkdir(parents=True, exist_ok=True)
+    if continue_training:
+        checkpoint = torch.load(work_dir / 'last_checkpoint.pt')
+        model_params = checkpoint['model']
+        optim_params = checkpoint['optimizer']
+        start_ep = checkpoint['epoch']
+    else:
+        model_params = None
+        optim_params = None
+        start_ep = 0
+
+    # Get tensorboard
+    log_writer = SummaryWriter(str(work_dir / 'tensorboard'), )
 
     # Get transforms
     mean = torch.tensor([0.46201408, 0.44023338, 0.40830722])
@@ -63,20 +82,26 @@ def main():
                           roi_size=roi_size,
                           backbone_model=backbone_model)
     model.to(device=device)
+    if model_params:
+        model.load_state_dict(model_params)
     
     # Get an optimizer
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(
+        model.parameters(), lr=lr, weight_decay=weight_decay)
+    if optim_params:
+        optimizer.load_state_dict(optim_params)
     
     # Do training
     model.train()
-    loss_log = []
+    train_log = []
+    val_log = []
     best_loss = None
-    for ep in range(epochs):
+    for ep in range(start_ep, end_ep):
 
-        # Train
+        # Train pass
         ep_losses = []
-        desc = f'Epoch {ep}'
-        for batch in tqdm(val_loader, desc=desc):
+        desc = f'Train epoch {ep}'
+        for batch in tqdm(train_loader, desc=desc):
             images, gt_boxes, gt_classes = batch
             images = images.to(device=device)
             gt_boxes = gt_boxes.to(device=device)
@@ -89,18 +114,47 @@ def main():
             optimizer.step()
 
             ep_losses.append(loss.item())
-        loss_log.append(torch.mean(torch.tensor(ep_losses)))
-        print(f'Epoch: {ep} loss: {loss_log[-1]}')
+        train_log.append(torch.mean(torch.tensor(ep_losses)))
 
-        if best_loss is None or best_loss > loss_log[-1]:
-            best_loss = loss_log[-1]
-            torch.save(model.state_dict(), 'best_model.pt')
+        # Validation pass
+        ep_losses.clear()
+        desc = f'Val epoch {ep}'
+        with torch.no_grad():
+            for batch in tqdm(val_loader, desc=desc):
+                images, gt_boxes, gt_classes = batch
+                images = images.to(device=device)
+                gt_boxes = gt_boxes.to(device=device)
+                gt_classes = gt_classes.to(device=device)
 
-        with open('train_log.txt', 'a') as f:
-            f.write(f'Epoch: {ep} loss: {loss_log[-1]}\n')
+                proposals, classes, loss = model(images, gt_boxes, gt_classes)
 
-        # Validation
-        # TODO сделать валидацию
+                ep_losses.append(loss.item())
+            val_log.append(torch.mean(torch.tensor(ep_losses)))
+
+        # Logging
+        print(f'Epoch: {ep} '
+              f'train_loss: {train_log[-1]} '
+              f'val_loss: {val_log[-1]}')
+
+        log_writer.add_scalar('Train_loss', train_log[-1], ep)
+        log_writer.add_scalar('Validation_loss', val_log[-1], ep)
+
+        # Saving
+        if best_loss is None or best_loss > val_log[-1]:
+            best_loss = val_log[-1]
+            torch.save(
+                model.state_dict(),
+                work_dir / 'best_model.pt')
+
+        torch.save(
+            {
+                'model': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'epoch': ep
+            },
+            work_dir / 'last_checkpoint.pt')
+
+    log_writer.close()
 
 
 if __name__ == '__main__':
