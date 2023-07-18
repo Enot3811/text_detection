@@ -40,7 +40,9 @@ def main():
     # Move selected images to another directory
     src_dir = img_dir / 'val'
     dst_dir = img_dir / 'test'
-    dst_dir.mkdir(exist_ok=True)
+    if dst_dir.exists():
+        shutil.rmtree(dst_dir)
+    dst_dir.mkdir(parents=True)
 
     desc = 'Move selected test images'
     for img_info in tqdm(test_imgs.values(), desc=desc):
