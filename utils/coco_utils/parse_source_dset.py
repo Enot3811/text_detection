@@ -71,18 +71,27 @@ def main():
         shutil.copyfile(src_pth, dst_pth)
 
     # Parse annotations bboxes
+    parsed_anns = {}
     desc = 'Parse annotations'
-    for ann_id in tqdm(anns_data, desc=desc):
-        bbox = tensor(anns_data[ann_id]['bbox'])
-        bbox[bbox < 0.0] = 0.0
-        bbox = box_convert(bbox, 'xywh', 'xyxy')
-        anns_data[ann_id]['bbox'] = bbox.tolist()
+    for img_id, anns_ids in tqdm(img_to_anns.items(), desc=desc):
+        for ann_id in anns_ids:
+            ann_id = str(ann_id)
+            ann_data = anns_data[ann_id]
+            bbox = tensor(ann_data['bbox'])
+            bbox[bbox < 0.0] = 0.0
+            bbox = box_convert(bbox, 'xywh', 'xyxy')
+            if bbox[2] > imgs_data[img_id]['width']:
+                bbox[2] = imgs_data[img_id]['width']
+            if bbox[3] > imgs_data[img_id]['height']:
+                bbox[3] = imgs_data[img_id]['height']
+            ann_data['bbox'] = bbox.tolist()
+            parsed_anns[ann_id] = ann_data
 
     # Save parsed json data
     json_dict = {
         'imgs': imgs_data,
         'imgToAnns': img_to_anns,
-        'anns': anns_data
+        'anns': parsed_anns
     }
 
     json_str = json.dumps(json_dict, indent=4)
