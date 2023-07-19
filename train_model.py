@@ -7,12 +7,12 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard.writer import SummaryWriter
-import torchvision.transforms as transforms
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).parents[2]))
 from dataset.object_detection_dataset import TextDetectionCocoDataset
-from dataset.transforms import Resize, ToTensor, Normalize
 from rcnn.rcnn_model import RCNN_Detector
 
 
@@ -22,6 +22,9 @@ def main():
     img_dir = DSET_DIR / 'images'
     name2index = {'pad': -1, 'legible': 0, 'illegible': 1}
     n_cls = len(name2index) - 1
+    crop_size = 448
+    bbox_min_visibility = 0.1
+    bbox_min_area = 30
 
     # Get model parameters
     input_size = (448, 448)
@@ -35,7 +38,7 @@ def main():
     weight_decay = 1e-3
     device = 'cuda'
     continue_training = True
-    end_ep = 20
+    end_ep = 50
 
     # Prepare some stuff
     device = torch.device(device=device)
@@ -45,7 +48,7 @@ def main():
         checkpoint = torch.load(work_dir / 'last_checkpoint.pt')
         model_params = checkpoint['model']
         optim_params = checkpoint['optimizer']
-        start_ep = checkpoint['epoch']
+        start_ep = checkpoint['epoch'] + 1
     else:
         model_params = None
         optim_params = None
@@ -57,19 +60,27 @@ def main():
     # Get transforms
     mean = torch.tensor([0.46201408, 0.44023338, 0.40830722])
     std = torch.tensor([0.2513935, 0.24573067, 0.24901628])
-    transf = transforms.Compose([
-        ToTensor(),
-        Resize(input_size),
-        Normalize(mean=mean, std=std)
-    ])
+    transform = A.Compose(
+        [
+            A.HorizontalFlip(),
+            A.VerticalFlip(),
+            A.RandomResizedCrop(crop_size, crop_size),
+            A.RandomBrightnessContrast(),
+            A.Normalize(mean=mean, std=std),
+            ToTensorV2()
+        ],
+        bbox_params=A.BboxParams(
+            format='pascal_voc', min_area=bbox_min_area,
+            min_visibility=bbox_min_visibility, label_fields=['classes'])
+    )
 
     # Get dataset and loader
     train_dset = TextDetectionCocoDataset(
         annotation_path=anns_pth, img_dir=img_dir, dset_type='train',
-        name2index=name2index, transforms=transf)
+        name2index=name2index, transforms=transform)
     val_dset = TextDetectionCocoDataset(
         annotation_path=anns_pth, img_dir=img_dir, dset_type='val',
-        name2index=name2index, transforms=transf)
+        name2index=name2index, transforms=transform)
     
     train_loader = DataLoader(
         train_dset, batch_size=b_size, num_workers=n_workers, shuffle=True)
@@ -150,7 +161,7 @@ def main():
             {
                 'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-                'epoch': ep
+                'epoch': ep + 1
             },
             work_dir / 'last_checkpoint.pt')
 
