@@ -4,12 +4,11 @@ from pathlib import Path
 import sys
 
 import torch
-from torchvision.transforms import Compose
+from torchvision.transforms.functional import to_tensor
 from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).parents[2]))
 from dataset.object_detection_dataset import TextDetectionCocoDataset
-from dataset.transforms import ToTensor
 
 
 def main():
@@ -17,16 +16,12 @@ def main():
     img_dir = DSET_DIR / 'images'
     name2index = {'pad': -1, 'legible': 0, 'illegible': 1}
 
-    transf = Compose([
-        ToTensor()
-    ])
-
     total_mean = torch.zeros(3, dtype=torch.float32)
     total_std = torch.zeros(3, dtype=torch.float32)
     for dset_type in {'train', 'val', 'test'}:
         dset = TextDetectionCocoDataset(
             annotation_path=anns_pth, img_dir=img_dir, dset_type=dset_type,
-            name2index=name2index, transforms=transf)
+            name2index=name2index)
         
         set_mean = torch.zeros(3, dtype=torch.float32)
         set_std = torch.zeros(3, dtype=torch.float32)
@@ -34,6 +29,7 @@ def main():
         desc = 'Calculate mean and std'
         for sample in tqdm(dset, desc=desc):
             img = sample[0]
+            img = to_tensor(img)
             set_mean += img.mean((1, 2))
             set_std += img.std((1, 2))
 
