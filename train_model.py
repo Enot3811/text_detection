@@ -14,6 +14,9 @@ from tqdm import tqdm
 sys.path.append(str(Path(__file__).parents[2]))
 from dataset.object_detection_dataset import TextDetectionCocoDataset
 from rcnn.rcnn_model import RCNN_Detector
+from rcnn.rcnn_utils import draw_bounding_boxes_cv2
+from utils.metrics import calculate_iou, calculate_prediction_count_diff
+from utils.numpy_utils import tensor_to_numpy
 
 
 def main():
@@ -21,6 +24,7 @@ def main():
     anns_pth = DSET_DIR / 'parsed_cocotext.json'
     img_dir = DSET_DIR / 'images'
     name2index = {'pad': -1, 'legible': 0, 'illegible': 1}
+    index2name = {-1: 'pad', 0: 'legible', 1: 'illegible'}
     n_cls = len(name2index) - 1
     crop_size = 448
     bbox_min_visibility = 0.1
@@ -30,15 +34,16 @@ def main():
     input_size = (448, 448)
     roi_size = (2, 2)
     backbone_model = 'resnet50'
+    conf_thresh = 0.8
+    iou_thresh = 0.1
 
     # Get training parameters
     lr = 0.0001
     b_size = 8
-    n_workers = 8
     weight_decay = 1e-3
     device = 'cuda'
     continue_training = True
-    end_ep = 50
+    end_ep = 56
 
     # Prepare some stuff
     device = torch.device(device=device)
@@ -83,9 +88,9 @@ def main():
         name2index=name2index, transforms=transform)
     
     train_loader = DataLoader(
-        train_dset, batch_size=b_size, num_workers=n_workers, shuffle=True)
+        train_dset, batch_size=b_size, shuffle=True)
     val_loader = DataLoader(
-        val_dset, batch_size=b_size, num_workers=n_workers)
+        val_dset, batch_size=b_size)
 
     # Get the model
     model = RCNN_Detector(input_size=input_size,
@@ -104,13 +109,14 @@ def main():
     
     # Do training
     model.train()
-    train_log = []
-    val_log = []
     best_loss = None
     for ep in range(start_ep, end_ep):
+        train_losses = [1.0]
+        val_losses = []
+        iou_values = []
+        n_pred_diff_values = []
 
         # Train pass
-        ep_losses = []
         desc = f'Train epoch {ep}'
         for batch in tqdm(train_loader, desc=desc):
             images, gt_boxes, gt_classes = batch
@@ -124,35 +130,72 @@ def main():
             loss.backward()
             optimizer.step()
 
-            ep_losses.append(loss.item())
-        train_log.append(torch.mean(torch.tensor(ep_losses)))
+            train_losses.append(loss.item())
 
         # Validation pass
-        ep_losses.clear()
         desc = f'Val epoch {ep}'
+        model.eval()
         with torch.no_grad():
+            save_examples = True  # Save one batch of examples on validation
             for batch in tqdm(val_loader, desc=desc):
                 images, gt_boxes, gt_classes = batch
                 images = images.to(device=device)
                 gt_boxes = gt_boxes.to(device=device)
                 gt_classes = gt_classes.to(device=device)
 
+                # Do forward pass to get loss
                 proposals, classes, loss = model(images, gt_boxes, gt_classes)
 
-                ep_losses.append(loss.item())
-            val_log.append(torch.mean(torch.tensor(ep_losses)))
+                # Do inference pass to get some output examples
+                bboxes, classes = model.inference(
+                    images, conf_thresh, iou_thresh)
+
+                # Calculate and save metrics
+                val_losses.append(loss.item())
+                iou_values.append(calculate_iou(gt_boxes, bboxes))
+                n_pred_diff_values.append(
+                    calculate_prediction_count_diff(gt_boxes, bboxes))
+                
+                # Save one batch of predictions
+                if save_examples:
+                    for i in range(b_size):
+                        save_image = (
+                            images[i] * std.view((3, 1, 1)).to(device=device) +
+                            mean.view((3, 1, 1)).to(device=device))
+                        save_image = tensor_to_numpy(save_image)
+                        save_image = draw_bounding_boxes_cv2(
+                            save_image, gt_boxes[i],
+                            gt_classes[i].to(dtype=torch.int16),
+                            index2name, color=(0, 255, 0))
+                        labels = torch.argmax(classes[i], dim=1)
+                        save_image = draw_bounding_boxes_cv2(
+                            save_image, bboxes[i], labels,
+                            index2name, color=(255, 255, 0))
+                        
+                        log_writer.add_image(
+                            f'example_{i}', save_image,
+                            ep, dataformats='HWC')
+                    save_examples = False
 
         # Logging
+        train_losses = sum(train_losses) / len(train_losses)
+        val_losses = sum(val_losses) / len(val_losses)
+        iou_values = sum(iou_values) / len(iou_values)
+        n_pred_diff_values = sum(n_pred_diff_values) / len(n_pred_diff_values)
         print(f'Epoch: {ep} '
-              f'train_loss: {train_log[-1]} '
-              f'val_loss: {val_log[-1]}')
+              f'train_loss: {train_losses} '
+              f'val_loss: {val_losses} '
+              f'IoU_metric: {iou_values.item()} '
+              f'Predict_cnt_metric: {n_pred_diff_values.item()}')
 
-        log_writer.add_scalar('Train_loss', train_log[-1], ep)
-        log_writer.add_scalar('Validation_loss', val_log[-1], ep)
+        log_writer.add_scalar('Train_loss', train_losses, ep)
+        log_writer.add_scalar('Validation_loss', val_losses, ep)
+        log_writer.add_scalar('IoU_metric', iou_values, ep)
+        log_writer.add_scalar('Predictions_count_diff', n_pred_diff_values, ep)
 
         # Saving
-        if best_loss is None or best_loss > val_log[-1]:
-            best_loss = val_log[-1]
+        if best_loss is None or best_loss > val_losses[-1]:
+            best_loss = val_losses[-1]
             torch.save(
                 model.state_dict(),
                 work_dir / 'best_model.pt')
