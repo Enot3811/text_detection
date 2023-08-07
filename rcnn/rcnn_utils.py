@@ -83,7 +83,7 @@ def draw_bounding_boxes(
 
 def draw_bounding_boxes_cv2(
     image: ArrayLike,
-    bboxes: Union[List[List[float]], FloatTensor],
+    bboxes: Union[List[List[Union[int, float]]], Tensor],
     labels: Union[IntTensor, List[int]] = None,
     index2name: Dict[int, str] = None,
     line_width: int = 2,
@@ -95,7 +95,7 @@ def draw_bounding_boxes_cv2(
     ----------
     image : ArrayLike
         The given image array.
-    bboxes : Union[List[List[float]], FloatTensor]
+    bboxes : Union[List[List[Union[int, float]]], Tensor]
         A tensor with shape `[N_bboxes, 4]` that contains the bounding boxes.
         It can contain pad `-1` values.
     labels : Union[IntTensor, List[int]], optional
@@ -115,7 +115,7 @@ def draw_bounding_boxes_cv2(
     """
     image = image.copy()
     # Convert bboxes tensor to list. Discard pad
-    if isinstance(bboxes, Tensor) and bboxes.is_floating_point():
+    if isinstance(bboxes, Tensor):
         bboxes = [
             bboxes[i].tolist()
             for i in range(bboxes.shape[0])
