@@ -1,20 +1,17 @@
-"""
-A module that contain functions for working with images.
-"""
+"""A module that contain functions for working with images."""
 
 
 from pathlib import Path
 from typing import Tuple, Union, Optional
 
 import numpy as np
-import cv2 as cv
+import cv2
 import matplotlib.pyplot as plt
 import torch
 
 
 def read_image(path: Union[Path, str], grayscale: bool = False) -> np.ndarray:
-    """
-    Read image to numpy array.
+    """Read image to numpy array.
 
     Parameters
     ----------
@@ -39,17 +36,16 @@ def read_image(path: Union[Path, str], grayscale: bool = False) -> np.ndarray:
         path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f'Did not find image {path}.')
-    flag = cv.IMREAD_GRAYSCALE if grayscale else cv.IMREAD_COLOR
-    img = cv.imread(str(path), flag)
+    flag = cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR
+    img = cv2.imread(str(path), flag)
     if img is None:
         raise ValueError('Image reading is not correct.')
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    img = cv2.cv2tColor(img, cv2.COLOR_BGR2RGB)
     return img
 
 
 def resize_image(image: np.ndarray, new_size: Tuple[int, int]) -> np.ndarray:
-    """
-    Resize image to given size.
+    """Resize image to given size.
 
     Parameters
     ----------
@@ -63,16 +59,15 @@ def resize_image(image: np.ndarray, new_size: Tuple[int, int]) -> np.ndarray:
     np.ndarray
         Resized image
     """
-    return cv.resize(
-        image, new_size, None, None, None, interpolation=cv.INTER_LINEAR)
+    return cv2.resize(
+        image, new_size, None, None, None, interpolation=cv2.INTER_LINEAR)
 
 
 def display_image(
     img: Union[torch.Tensor, np.ndarray],
     ax: Optional[plt.Axes] = None
 ) -> plt.Axes:
-    """
-    Display an image on a matplotlib figure.
+    """Display an image on a matplotlib figure.
 
     Parameters
     ----------

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>910</width>
+    <width>1113</width>
     <height>450</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="BackButton">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -40,7 +40,7 @@
      <string>Назад</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="NextButton">
     <property name="geometry">
      <rect>
       <x>450</x>
@@ -53,7 +53,7 @@
      <string>Вперёд</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="idx_lineEdit">
+   <widget class="QLineEdit" name="IdxLineEdit">
     <property name="geometry">
      <rect>
       <x>300</x>
@@ -69,172 +69,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>570</x>
-      <y>10</y>
-      <width>51</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Include</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>650</x>
-      <y>10</y>
-      <width>21</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>X1</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>10</y>
-      <width>21</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Y1</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>780</x>
-      <y>10</y>
-      <width>21</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>X2</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>10</y>
-      <width>21</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Y2</string>
-    </property>
-   </widget>
-   <widget class="QScrollArea" name="annotations_scroll_panel">
-    <property name="geometry">
-     <rect>
-      <x>550</x>
-      <y>30</y>
-      <width>351</width>
-      <height>371</height>
-     </rect>
-    </property>
-    <property name="widgetResizable">
-     <bool>true</bool>
-    </property>
-    <widget class="QWidget" name="scrollAreaWidgetContents">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>349</width>
-       <height>369</height>
-      </rect>
-     </property>
-     <widget class="QWidget" name="">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>331</width>
-        <height>27</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QCheckBox" name="checkBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>11111</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>1111</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>1111</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit_3">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>1111</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>1111</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QComboBox" name="set_comboBox">
+   <widget class="QComboBox" name="SetComboBox">
     <property name="geometry">
      <rect>
       <x>190</x>
@@ -244,13 +79,41 @@
      </rect>
     </property>
    </widget>
+   <widget class="QPushButton" name="AddButton">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>370</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Добавить</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>10</y>
+      <width>551</width>
+      <height>351</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="TableLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>910</width>
+     <width>1113</width>
      <height>22</height>
     </rect>
    </property>
