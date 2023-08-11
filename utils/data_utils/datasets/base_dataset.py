@@ -1,4 +1,4 @@
-"""A module that contains a base dataset, example and annotation classes."""
+"""A module that contains a base dataset, sample and annotation classes."""
 
 
 from pathlib import Path
@@ -14,16 +14,23 @@ from rcnn.rcnn_utils import draw_bounding_boxes_cv2
 
 class BaseAnnotation:
     def __init__(
-        self, x1: int, y1: int, x2: int, y2: int, language: str
+        self,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        language: str = 'unlabeled',
+        word: str = ''
     ) -> None:
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
         self.language = language
+        self.word = word
 
 
-class BaseExample:
+class BaseSample:
     def __init__(
         self, img_pth: Path, img_annots: List[BaseAnnotation]
     ) -> None:
@@ -43,6 +50,6 @@ class BaseExample:
 
 class BaseDataset:
     def __init__(self) -> None:
-        self.train_set: List[BaseExample]
-        self.val_set: List[BaseExample]
-        self.test_set: List[BaseExample]
+        self.train_set: List[BaseSample]
+        self.val_set: List[BaseSample]
+        self.test_set: List[BaseSample]

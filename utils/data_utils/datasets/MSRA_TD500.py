@@ -5,7 +5,7 @@ from typing import Tuple, List, Union
 sys.path.append(str(Path(__file__).parents[3]))
 from utils.numpy_utils import rotate_rectangle
 from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseExample, BaseDataset)
+    BaseAnnotation, BaseSample, BaseDataset)
 
 
 class MSRA_TD500_annotation(BaseAnnotation):
@@ -22,7 +22,7 @@ class MSRA_TD500_annotation(BaseAnnotation):
         w = int(w)
         h = int(h)
         x1, y1, x2, y2 = self.normalize_bboxes(x, y, w, h, angle)
-        super().__init__(x1, y1, x2, y2, 'unlabeled')
+        super().__init__(x1, y1, x2, y2)
     
     def normalize_bboxes(
         self, x: int, y: int, w: int, h: int, angle: float
@@ -66,7 +66,7 @@ class MSRA_TD500_annotation(BaseAnnotation):
         return x1, y1, x2, y2
 
 
-class MSRA_TD500_example(BaseExample):
+class MSRA_TD500_sample(BaseSample):
     def __init__(
         self, img_pth: Path, img_annots: List[MSRA_TD500_annotation]
     ) -> None:
@@ -87,8 +87,8 @@ class MSRA_TD500_dataset(BaseDataset):
         self.test_set = self.read_set(test_dir)
         self.val_set = []
 
-    def read_set(self, set_dir: Path) -> List[MSRA_TD500_example]:
-        """Read a directory with a set, generate a list of examples.
+    def read_set(self, set_dir: Path) -> List[MSRA_TD500_sample]:
+        """Read a directory with a set, generate a list of samples.
 
         Parameters
         ----------
@@ -97,28 +97,28 @@ class MSRA_TD500_dataset(BaseDataset):
 
         Returns
         -------
-        List[MSRA_TD500_example]
-            The list of set's examples.
+        List[MSRA_TD500_sample]
+            The list of set's samples.
         """
         annots_files = list(set_dir.glob('*.gt'))
         img_pths = list(set_dir.glob('*.JPG'))
         annots_files.sort()
         img_pths.sort()
 
-        examples = []
+        samples = []
         for annt_file, img_pth in zip(annots_files, img_pths):
             annots = self.read_annotation_file(annt_file)
-            examples.append(MSRA_TD500_example(img_pth, annots))
-        return examples
+            samples.append(MSRA_TD500_sample(img_pth, annots))
+        return samples
 
     def read_annotation_file(
-        self, annt_pth: Path
+        self, annot_pth: Path
     ) -> List[MSRA_TD500_annotation]:
         """Read annotation file of MSRA TD500 dataset and get annotations list.
 
         Parameters
         ----------
-        annt_pth : Path
+        annot_pth : Path
             A path to file.
 
         Returns
@@ -126,7 +126,7 @@ class MSRA_TD500_dataset(BaseDataset):
         List[MSRA_TD500_annotation]
             The list of annotations.
         """
-        with open(annt_pth, 'r') as f:
+        with open(annot_pth, 'r') as f:
             lines = f.readlines()
         annots = []
         for annot_str in lines:
