@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 sys.path.append(str(Path(__file__).parents[3]))
 from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseExample, BaseDataset)
+    BaseAnnotation, BaseSample, BaseDataset)
 
 
 class SVT_annotation(BaseAnnotation):
@@ -29,7 +29,7 @@ class SVT_annotation(BaseAnnotation):
         super().__init__(x1, y1, x2, y2, language, word)
 
 
-class SVT_example(BaseExample):
+class SVT_sample(BaseSample):
     def __init__(
         self, img_pth: Path, img_annots: List[SVT_annotation]
     ) -> None:
@@ -50,8 +50,8 @@ class SVT_dataset(BaseDataset):
         self.test_set = self.read_set(test_annots)
         self.val_set = []
 
-    def read_set(self, set_annots: Path) -> List[SVT_example]:
-        """Read an annotations file of a set, generate a list of examples.
+    def read_set(self, set_annots: Path) -> List[SVT_sample]:
+        """Read an annotations file of a set, generate a list of samples.
 
         Parameters
         ----------
@@ -60,14 +60,14 @@ class SVT_dataset(BaseDataset):
 
         Returns
         -------
-        List[SVT_example]
-            The list of set's examples.
+        List[SVT_sample]
+            The list of set's samples.
         """
         tree = ET.parse(set_annots)
         root = tree.getroot()
         print(root.tag)
 
-        examples: List[SVT_example] = []
+        samples: List[SVT_sample] = []
         for image_annots in root:
             img_pth = image_annots[0]
             bboxes = image_annots[4]
@@ -81,4 +81,4 @@ class SVT_dataset(BaseDataset):
                 word = bbox[0].text
                 annots.append(SVT_annotation(x, y, w, h, word))
 
-            examples.append(SVT_example(img_pth, annots))
+            samples.append(SVT_sample(img_pth, annots))
