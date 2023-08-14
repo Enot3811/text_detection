@@ -48,9 +48,9 @@ class ICDAR2003_dataset(BaseDataset):
         sample_dir = dset_folder / 'SceneTrialSample'
 
         sample_set = self.read_set(sample_dir)
-        self.train_set = self.read_set(train_dir) + sample_set
-        self.test_set = self.read_set(test_dir)
-        self.val_set = []
+        self._train_set = self.read_set(train_dir) + sample_set
+        self._test_set = self.read_set(test_dir)
+        self._val_set = []
 
     def read_set(self, set_dir: Path) -> List[ICDAR2003_sample]:
         """Read a directory with a set, generate a list of samples.
@@ -83,3 +83,4 @@ class ICDAR2003_dataset(BaseDataset):
                 annots.append(ICDAR2003_annotation(x, y, w, h, word))
 
             samples.append(ICDAR2003_sample(img_pth, annots))
+        return samples

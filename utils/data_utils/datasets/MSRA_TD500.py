@@ -83,9 +83,9 @@ class MSRA_TD500_dataset(BaseDataset):
         train_dir = dset_folder / 'train'
         test_dir = dset_folder / 'test'
 
-        self.train_set = self.read_set(train_dir)
-        self.test_set = self.read_set(test_dir)
-        self.val_set = []
+        self._train_set = self.read_set(train_dir)
+        self._test_set = self.read_set(test_dir)
+        self._val_set = []
 
     def read_set(self, set_dir: Path) -> List[MSRA_TD500_sample]:
         """Read a directory with a set, generate a list of samples.

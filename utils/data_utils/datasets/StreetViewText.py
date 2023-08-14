@@ -46,9 +46,9 @@ class SVT_dataset(BaseDataset):
         train_annots = dset_folder / 'train.xml'
         test_annots = dset_folder / 'test.xml'
 
-        self.train_set = self.read_set(train_annots)
-        self.test_set = self.read_set(test_annots)
-        self.val_set = []
+        self._train_set = self.read_set(train_annots)
+        self._test_set = self.read_set(test_annots)
+        self._val_set = []
 
     def read_set(self, set_annots: Path) -> List[SVT_sample]:
         """Read an annotations file of a set, generate a list of samples.
@@ -82,3 +82,4 @@ class SVT_dataset(BaseDataset):
                 annots.append(SVT_annotation(x, y, w, h, word))
 
             samples.append(SVT_sample(img_pth, annots))
+        return samples

@@ -39,8 +39,8 @@ class NEOCR_dataset(BaseDataset):
         self.train_set: List[NEOCR_sample] = [
             self.read_annotation_file(annots_file, img_dir)
             for annots_file in annots_files]
-        self.val_set = []
-        self.test_set = []
+        self._val_set = []
+        self._test_set = []
 
     def read_annotation_file(
         self, annot_pth: Path, img_dir: Path
