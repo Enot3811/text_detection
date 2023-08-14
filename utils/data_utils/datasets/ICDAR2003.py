@@ -70,15 +70,15 @@ class ICDAR2003_dataset(BaseDataset):
 
         samples: List[ICDAR2003_sample] = []
         for image_annots in root:
-            img_pth = image_annots[0]
+            img_pth = set_dir / image_annots[0].text
             bboxes = image_annots[2]
 
             annots: List[ICDAR2003_annotation] = []
             for bbox in bboxes:
-                x = int(bbox.attrib['x'])
-                y = int(bbox.attrib['y'])
-                w = int(bbox.attrib['width'])
-                h = int(bbox.attrib['height'])
+                x = int(bbox.attrib['x'].split('.')[0])
+                y = int(bbox.attrib['y'].split('.')[0])
+                w = int(bbox.attrib['width'].split('.')[0])
+                h = int(bbox.attrib['height'].split('.')[0])
                 word = bbox[0].text
                 annots.append(ICDAR2003_annotation(x, y, w, h, word))
 
