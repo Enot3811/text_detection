@@ -40,7 +40,7 @@ def read_image(path: Union[Path, str], grayscale: bool = False) -> np.ndarray:
     img = cv2.imread(str(path), flag)
     if img is None:
         raise ValueError('Image reading is not correct.')
-    img = cv2.cv2tColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
 
