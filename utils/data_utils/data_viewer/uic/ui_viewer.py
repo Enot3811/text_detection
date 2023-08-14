@@ -16,9 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
+    QLineEdit, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpacerItem, QStatusBar,
+    QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -27,6 +28,8 @@ class Ui_MainWindow(object):
         MainWindow.resize(1113, 450)
         self.DsetOpener = QAction(MainWindow)
         self.DsetOpener.setObjectName(u"DsetOpener")
+        self.action_open_dset = QAction(MainWindow)
+        self.action_open_dset.setObjectName(u"action_open_dset")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.picture_box = QLabel(self.centralwidget)
@@ -36,27 +39,50 @@ class Ui_MainWindow(object):
         self.picture_box.setScaledContents(True)
         self.BackButton = QPushButton(self.centralwidget)
         self.BackButton.setObjectName(u"BackButton")
+        self.BackButton.setEnabled(False)
         self.BackButton.setGeometry(QRect(10, 380, 89, 25))
         self.NextButton = QPushButton(self.centralwidget)
         self.NextButton.setObjectName(u"NextButton")
+        self.NextButton.setEnabled(False)
         self.NextButton.setGeometry(QRect(450, 380, 89, 25))
         self.IdxLineEdit = QLineEdit(self.centralwidget)
         self.IdxLineEdit.setObjectName(u"IdxLineEdit")
+        self.IdxLineEdit.setEnabled(False)
         self.IdxLineEdit.setGeometry(QRect(300, 380, 71, 25))
         self.IdxLineEdit.setReadOnly(True)
         self.SetComboBox = QComboBox(self.centralwidget)
         self.SetComboBox.setObjectName(u"SetComboBox")
+        self.SetComboBox.setEnabled(False)
         self.SetComboBox.setGeometry(QRect(190, 380, 81, 25))
-        self.AddButton = QPushButton(self.centralwidget)
-        self.AddButton.setObjectName(u"AddButton")
-        self.AddButton.setGeometry(QRect(810, 370, 89, 25))
         self.verticalLayoutWidget = QWidget(self.centralwidget)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
         self.verticalLayoutWidget.setGeometry(QRect(560, 10, 551, 351))
-        self.TableLayout = QVBoxLayout(self.verticalLayoutWidget)
-        self.TableLayout.setSpacing(0)
-        self.TableLayout.setObjectName(u"TableLayout")
-        self.TableLayout.setContentsMargins(0, 0, 0, 0)
+        self.table_layout = QVBoxLayout(self.verticalLayoutWidget)
+        self.table_layout.setSpacing(0)
+        self.table_layout.setObjectName(u"table_layout")
+        self.table_layout.setContentsMargins(0, 0, 0, 0)
+        self.widget = QWidget(self.centralwidget)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(670, 370, 331, 27))
+        self.horizontalLayout = QHBoxLayout(self.widget)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.save_btn = QPushButton(self.widget)
+        self.save_btn.setObjectName(u"save_btn")
+        self.save_btn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.save_btn)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.add_btn = QPushButton(self.widget)
+        self.add_btn.setObjectName(u"add_btn")
+        self.add_btn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.add_btn)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -69,7 +95,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menu.menuAction())
-        self.menu.addAction(self.DsetOpener)
+        self.menu.addAction(self.action_open_dset)
 
         self.retranslateUi(MainWindow)
 
@@ -78,12 +104,14 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.DsetOpener.setText(QCoreApplication.translate("MainWindow", u"\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0434\u0430\u0442\u0430\u0441\u0435\u0442", None))
+        self.DsetOpener.setText(QCoreApplication.translate("MainWindow", u"Open dataset", None))
+        self.action_open_dset.setText(QCoreApplication.translate("MainWindow", u"Open dataset", None))
         self.picture_box.setText("")
-        self.BackButton.setText(QCoreApplication.translate("MainWindow", u"\u041d\u0430\u0437\u0430\u0434", None))
-        self.NextButton.setText(QCoreApplication.translate("MainWindow", u"\u0412\u043f\u0435\u0440\u0451\u0434", None))
+        self.BackButton.setText(QCoreApplication.translate("MainWindow", u"Previous", None))
+        self.NextButton.setText(QCoreApplication.translate("MainWindow", u"Next", None))
         self.IdxLineEdit.setText("")
-        self.AddButton.setText(QCoreApplication.translate("MainWindow", u"\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c", None))
-        self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0424\u0430\u0439\u043b", None))
+        self.save_btn.setText(QCoreApplication.translate("MainWindow", u"Save changes", None))
+        self.add_btn.setText(QCoreApplication.translate("MainWindow", u"Add annotation", None))
+        self.menu.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 
