@@ -1,76 +1,120 @@
 import sys
 from pathlib import Path
+from typing import List, Optional
 
-from PySide6.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import (
+    QMainWindow, QTableWidget, QTableWidgetItem, QFileDialog)
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QKeyEvent, QImage, QPixmap
+from numpy.typing import NDArray
 
 sys.path.append(str(Path(__file__).parents[3]))
 from utils.data_utils.data_viewer.uic.ui_viewer import Ui_MainWindow
-from utils.data_utils.datasets import (
-    ICDAR2003_dataset, MSRA_TD500_dataset, NEOCR_dataset, SVT_dataset)
+from utils.data_utils.datasets import datasets, BaseAnnotation, BaseDataset
 
 
-# Available datasets and its directories names
-DATASETS = {
-    'ICDAR2003': ICDAR2003_dataset,
-    'MSRA_TD500': MSRA_TD500_dataset,
-    'NEOCR': NEOCR_dataset,
-    'StreetViewText': SVT_dataset
-}
-
-# TODO
-# pythonguis.com/tutorials/pyqt-actions-toolbars-menus/
 class ViewerWindow(QMainWindow, Ui_MainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setupUi(self)
         self.create_table()
-        self.AddButton.clicked.connect(self.add_new_row)
-        self.DsetOpener.
+        self.add_btn.clicked.connect(self.add_new_row)
+        self.action_open_dset.triggered.connect(self.load_dataset)
+
+        self.dset: BaseDataset = None
+        self.current_set: str = None
+        self.current_idx: int = None
         
-        # self.fill_annotation_panel()
+        # TODO
+        # pythonguis.com/tutorials/pyqt-actions-toolbars-menus/
+        # self.DsetOpener.
 
     def create_table(self):
-        self.table = ViewerTable(self)
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels(
+        self.annots_table = ViewerTable(self)
+        self.annots_table.setColumnCount(6)
+        self.annots_table.setHorizontalHeaderLabels(
             ['x1', 'y1', 'x2', 'y2', 'language', 'word'])
-        self.table.resizeColumnsToContents()
-        self.table.itemChanged.connect(self.table_changed)
-        self.TableLayout.addWidget(self.table)
+        self.annots_table.resizeColumnsToContents()
+        self.annots_table.itemChanged.connect(self.table_changed)
+        self.table_layout.addWidget(self.annots_table)
 
-    def add_new_row(self):
-        row_count = self.table.rowCount()
-        self.table.insertRow(row_count)
-        self.table.setItem(row_count, 0, QTableWidgetItem('0'))
-        self.table.setItem(row_count, 1, QTableWidgetItem('0'))
-        self.table.setItem(row_count, 2, QTableWidgetItem('1'))
-        self.table.setItem(row_count, 3, QTableWidgetItem('1'))
-        self.table.setItem(row_count, 4, QTableWidgetItem('english'))
-        self.table.setItem(row_count, 5, QTableWidgetItem('word'))
+    def add_new_row(self, annotation: Optional[BaseAnnotation] = None):
+        if annotation:
+            x1 = str(annotation.x1)
+            y1 = str(annotation.y1)
+            x2 = str(annotation.x2)
+            y2 = str(annotation.y2)
+            language = annotation.language
+            word = annotation.word
+        else:
+            x1 = '0'
+            y1 = '0'
+            x2 = '1'
+            y2 = '1'
+            language = 'english'
+            word = 'word'
+        row_count = self.annots_table.rowCount()
+        self.annots_table.insertRow(row_count)
+        self.annots_table.setItem(row_count, 0, QTableWidgetItem(x1))
+        self.annots_table.setItem(row_count, 1, QTableWidgetItem(y1))
+        self.annots_table.setItem(row_count, 2, QTableWidgetItem(x2))
+        self.annots_table.setItem(row_count, 3, QTableWidgetItem(y2))
+        self.annots_table.setItem(row_count, 4, QTableWidgetItem(language))
+        self.annots_table.setItem(row_count, 5, QTableWidgetItem(word))
+
+    def enable_controls(self):
+        self.NextButton.setEnabled(True)
+        self.BackButton.setEnabled(True)
+        self.SetComboBox.setEnabled(True)
+        self.IdxLineEdit.setEnabled(True)
+        self.add_btn.setEnabled(True)
 
     def table_changed(self):
         # If event is fired when row is added
-        if self.table.row_adding:
+        if self.annots_table.row_adding:
             return
-        row_idx = self.table.currentRow()
-        x1 = int(self.table.item(row_idx, 0).text())
-        y1 = int(self.table.item(row_idx, 1).text())
-        x2 = int(self.table.item(row_idx, 2).text())
-        y2 = int(self.table.item(row_idx, 3).text())
-        language = self.table.item(row_idx, 4).text()
-        word = self.table.item(row_idx, 5).text()
+        row_idx = self.annots_table.currentRow()
+        x1 = int(self.annots_table.item(row_idx, 0).text())
+        y1 = int(self.annots_table.item(row_idx, 1).text())
+        x2 = int(self.annots_table.item(row_idx, 2).text())
+        y2 = int(self.annots_table.item(row_idx, 3).text())
+        language = self.annots_table.item(row_idx, 4).text()
+        word = self.annots_table.item(row_idx, 5).text()
 
         row = [x1, y1, x2, y2, language, word]
 
         # TODO сюда вызов отрисовки картинки
         print(row)
 
-        
-    # def fill_annotation_panel(self, example: MSRA_TD500_example=0):
-    #     # print(self.scrollAreaWidgetContents.)
-    #     pass
+    def show_image(self, img: NDArray):
+        height, width, channel = img.shape
+        bytesPerLine = 3 * width
+        q_img = QImage(
+            img.data, width, height, bytesPerLine, QImage.Format_RGB888)
+        self.picture_box.setPixmap(QPixmap(q_img))
+
+    def show_annotations(self, annots: List[BaseAnnotation]):
+        self.annots_table.clear()
+        for annot in annots:
+            self.add_new_row(annot)
+
+    def load_dataset(self):
+        dset_pth = Path(
+            QFileDialog.getExistingDirectory(self, 'Select dataset directory'))
+        if dset_pth == '':
+            return
+        self.dset = datasets[dset_pth.name](dset_pth)
+        self.current_set = 'train'
+        self.current_idx = 0
+        self.enable_controls()
+        self.load_sample()
+
+    def load_sample(self):
+        sample = self.dset[self.current_set][self.current_idx]
+        img_to_show = sample.get_image_with_bboxes()
+        annots = sample.get_annotations()
+        self.show_image(img_to_show)
+        self.show_annotations(annots)
 
 
 class ViewerTable(QTableWidget):
