@@ -4,13 +4,13 @@
 from typing import List, Tuple
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 from torch import Tensor
 
 
 def tensor_to_numpy(
     data: Tensor, permute_channel_dim: bool = True
-) -> ArrayLike:
+) -> NDArray:
     """Convert tensor to numpy array.
 
     If needed do permute for channel dimension: `(c, h, w)` -> `(h, w, c)`.
@@ -24,7 +24,7 @@ def tensor_to_numpy(
 
     Returns
     -------
-    ArrayLike
+    NDArray
         Converted tensor.
     """
     data = data.detach().cpu()

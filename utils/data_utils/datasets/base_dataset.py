@@ -3,9 +3,9 @@
 
 from pathlib import Path
 import sys
-from typing import List
+from typing import List, Dict
 
-from numpy.typing import ArrayLike
+from numpy.typing import NDArray
 
 sys.path.append(str(Path(__file__).parents[3]))
 from utils.image_utils import read_image
@@ -37,10 +37,10 @@ class BaseSample:
         self.img_pth = img_pth
         self.img_annots = img_annots
 
-    def get_image(self) -> ArrayLike:
+    def get_image(self) -> NDArray:
         return read_image(self.img_pth)
     
-    def get_image_with_bboxes(self) -> ArrayLike:
+    def get_image_with_bboxes(self) -> NDArray:
         img = self.get_image()
         bboxes = list(map(lambda anns: (anns.x1, anns.y1, anns.x2, anns.y2),
                           self.img_annots))
