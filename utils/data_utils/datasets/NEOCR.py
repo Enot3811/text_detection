@@ -36,7 +36,7 @@ class NEOCR_dataset(BaseDataset):
         img_dir = dset_folder / 'Images'
         annots_files = annots_dir.glob('*.xml')
 
-        self.train_set: List[NEOCR_sample] = [
+        self._train_set: List[NEOCR_sample] = [
             self.read_annotation_file(annots_file, img_dir)
             for annots_file in annots_files]
         self._val_set = []

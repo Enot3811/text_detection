@@ -46,17 +46,21 @@ class SVT_dataset(BaseDataset):
         train_annots = dset_folder / 'train.xml'
         test_annots = dset_folder / 'test.xml'
 
-        self._train_set = self.read_set(train_annots)
-        self._test_set = self.read_set(test_annots)
+        self._train_set = self.read_set(train_annots, dset_folder)
+        self._test_set = self.read_set(test_annots, dset_folder)
         self._val_set = []
 
-    def read_set(self, set_annots: Path) -> List[SVT_sample]:
+    def read_set(
+        self, set_annots: Path, dset_folder: Path
+    ) -> List[SVT_sample]:
         """Read an annotations file of a set, generate a list of samples.
 
         Parameters
         ----------
         set_annots : Path
             The set directory path.
+        dset_folder : Path
+            A dataset folder path.
 
         Returns
         -------
@@ -65,11 +69,10 @@ class SVT_dataset(BaseDataset):
         """
         tree = ET.parse(set_annots)
         root = tree.getroot()
-        print(root.tag)
 
         samples: List[SVT_sample] = []
         for image_annots in root:
-            img_pth = image_annots[0]
+            img_pth = dset_folder / image_annots[0].text
             bboxes = image_annots[4]
 
             annots: List[SVT_annotation] = []
