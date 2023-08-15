@@ -24,10 +24,6 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         self.dset: BaseDataset = None
         self.current_set: str = None
         self.current_idx: int = None
-        
-        # TODO
-        # pythonguis.com/tutorials/pyqt-actions-toolbars-menus/
-        # self.DsetOpener.
 
     def create_table(self):
         self.annots_table = ViewerTable(self)
@@ -99,10 +95,12 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
             self.add_new_row(annot)
 
     def load_dataset(self):
-        dset_pth = Path(
-            QFileDialog.getExistingDirectory(self, 'Select dataset directory'))
+        dset_pth = QFileDialog.getExistingDirectory(
+            self, 'Select dataset directory')
         if dset_pth == '':
             return
+        else:
+            dset_pth = Path(dset_pth)
         self.dset = datasets[dset_pth.name](dset_pth)
         self.current_set = 'train'
         self.current_idx = 0
