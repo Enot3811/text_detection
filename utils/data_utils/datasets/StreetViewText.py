@@ -1,4 +1,4 @@
-"""ICDAR 2003 dataset classes."""
+"""Street view text dataset classes."""
 
 
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""ICDAR 2003 dataset classes."""
+"""NEOCR dataset classes."""
 
 
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""MSRA TD500 dataset classes."""
+
 from pathlib import Path
 import sys
 from typing import Tuple, List, Union
