@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide6.QtWidgets import QApplication
 
 sys.path.append(str(Path(__file__).parents[3]))
-from utils.data_utils.data_viewer.viewer_window import ViewerWindow
+from utils.data_utils.data_viewer.viewer_modules import ViewerWindow
 
 
 def main():
