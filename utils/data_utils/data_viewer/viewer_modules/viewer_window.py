@@ -8,9 +8,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QKeyEvent, QImage, QPixmap
 from numpy.typing import NDArray
 
-sys.path.append(str(Path(__file__).parents[3]))
+sys.path.append(str(Path(__file__).parents[4]))
 from utils.data_utils.data_viewer.uic.ui_viewer import Ui_MainWindow
-from utils.data_utils.datasets import datasets, BaseAnnotation, BaseDataset
+from utils.data_utils.datasets import datasets, BaseAnnotation, BaseSample
+from utils.data_utils.data_viewer.viewer_modules import ViewerDataset
 
 
 class ViewerWindow(QMainWindow, Ui_MainWindow):
@@ -18,12 +19,14 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.create_table()
+        self.setup_events()
+        self.dset: ViewerDataset = None
+
+    def setup_events(self):
         self.add_btn.clicked.connect(self.add_new_row)
         self.action_open_dset.triggered.connect(self.load_dataset)
-
-        self.dset: BaseDataset = None
-        self.current_set: str = None
-        self.current_idx: int = None
+        self.next_btn.clicked.connect(self.next_btn_click)
+        self.previous_btn.clicked.connect(self.previous_btn_click)
 
     def create_table(self):
         self.annots_table = ViewerTable(self)
@@ -59,10 +62,10 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         self.annots_table.setItem(row_count, 5, QTableWidgetItem(word))
 
     def enable_controls(self):
-        self.NextButton.setEnabled(True)
-        self.BackButton.setEnabled(True)
-        self.SetComboBox.setEnabled(True)
-        self.IdxLineEdit.setEnabled(True)
+        self.next_btn.setEnabled(True)
+        self.previous_btn.setEnabled(True)
+        self.subset_combobox.setEnabled(True)
+        self.idx_textbox.setEnabled(True)
         self.add_btn.setEnabled(True)
 
     def table_changed(self):
@@ -84,7 +87,7 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
 
     def show_image(self, img: NDArray):
         height, width, channel = img.shape
-        bytesPerLine = 3 * width
+        bytesPerLine = channel * width
         q_img = QImage(
             img.data, width, height, bytesPerLine, QImage.Format_RGB888)
         self.picture_box.setPixmap(QPixmap(q_img))
@@ -101,18 +104,25 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
             return
         else:
             dset_pth = Path(dset_pth)
-        self.dset = datasets[dset_pth.name](dset_pth)
-        self.current_set = 'train'
-        self.current_idx = 0
+        self.dset = ViewerDataset(datasets[dset_pth.name](dset_pth))
         self.enable_controls()
         self.load_sample()
 
-    def load_sample(self):
-        sample = self.dset[self.current_set][self.current_idx]
+    def load_sample(self, sample: Optional[BaseSample] = None):
+        if sample is None:
+            sample = self.dset.get_current_sample()
         img_to_show = sample.get_image_with_bboxes()
         annots = sample.get_annotations()
         self.show_image(img_to_show)
         self.show_annotations(annots)
+
+    def next_btn_click(self):
+        sample = self.dset.next_sample()
+        self.load_sample(sample)
+
+    def previous_btn_click(self):
+        sample = self.dset.previous_sample()
+        self.load_sample(sample)
 
 
 class ViewerTable(QTableWidget):
