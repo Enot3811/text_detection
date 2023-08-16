@@ -33,7 +33,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="BackButton">
+   <widget class="QPushButton" name="previous_btn">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -49,7 +49,7 @@
      <string>Previous</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="NextButton">
+   <widget class="QPushButton" name="next_btn">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -65,7 +65,7 @@
      <string>Next</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="IdxLineEdit">
+   <widget class="QLineEdit" name="idx_textbox">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -84,7 +84,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QComboBox" name="SetComboBox">
+   <widget class="QComboBox" name="subset_combobox">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -112,7 +112,7 @@
      </property>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>670</x>
