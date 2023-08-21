@@ -80,10 +80,17 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         language = self.annots_table.item(row_idx, 4).text()
         word = self.annots_table.item(row_idx, 5).text()
 
-        row = [x1, y1, x2, y2, language, word]
+        # Replace changed annotation
+        current_sample = self.dset.get_current_sample()
+        current_sample.get_annotations()[row_idx] = BaseAnnotation(
+            x1, y1, x2, y2, language, word)
+        # And show updated sample
+        self.load_sample(current_sample)
 
-        # TODO сюда вызов отрисовки картинки
-        print(row)
+    def subset_changed(self, new_subset: str):
+        self.dset.set_current_subset(new_subset)
+        new_sample = self.dset.get_current_sample()
+        self.load_sample(new_sample)
 
     def show_image(self, img: NDArray):
         height, width, channel = img.shape
@@ -93,7 +100,7 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         self.picture_box.setPixmap(QPixmap(q_img))
 
     def show_annotations(self, annots: List[BaseAnnotation]):
-        self.annots_table.clear()
+        self.annots_table.setRowCount(0)
         for annot in annots:
             self.add_new_row(annot)
 
