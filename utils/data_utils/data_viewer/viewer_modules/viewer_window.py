@@ -27,6 +27,7 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         self.action_open_dset.triggered.connect(self.load_dataset)
         self.next_btn.clicked.connect(self.next_btn_click)
         self.previous_btn.clicked.connect(self.previous_btn_click)
+        self.subset_combobox.currentTextChanged.connect(self.subset_changed)
 
     def create_table(self):
         self.annots_table = ViewerTable(self)
@@ -112,6 +113,8 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         else:
             dset_pth = Path(dset_pth)
         self.dset = ViewerDataset(datasets[dset_pth.name](dset_pth))
+        for subset in self.dset.available_subsets():
+            self.subset_combobox.addItem(subset)
         self.enable_controls()
         self.load_sample()
 
@@ -122,6 +125,7 @@ class ViewerWindow(QMainWindow, Ui_MainWindow):
         annots = sample.get_annotations()
         self.show_image(img_to_show)
         self.show_annotations(annots)
+        self.idx_textbox.setText(str(self.dset.get_current_index()))
 
     def next_btn_click(self):
         sample = self.dset.next_sample()
