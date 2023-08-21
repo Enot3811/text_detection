@@ -68,18 +68,27 @@ class ViewerDataset:
                 The current sample.
             """
             return self._subset[self._current_idx]
+        
+        def get_current_index(self) -> int:
+            """Get a current sample index.
+
+            Returns
+            -------
+            int
+                The current index.
+            """
+            return self._current_idx
 
     def __init__(self, dataset: BaseDataset) -> None:
-        self.dset = dataset
-        self.subsets: Dict[str, self.Subset] = {
+        self._subsets: Dict[str, self.Subset] = {
             subset_name: self.Subset(dataset[subset_name])
             for subset_name in ('train', 'val', 'test')
             if len(dataset[subset_name]) != 0
         }
-        self.current_subset = list(self.subsets.keys())[0]
+        self._current_subset = list(self._subsets.keys())[0]
 
     def __getitem__(self, subset_name: str):
-        return self.subsets[subset_name]
+        return self._subsets[subset_name]
 
     def available_subsets(self) -> List[str]:
         """Get names of available subsets.
@@ -89,7 +98,7 @@ class ViewerDataset:
         List[str]
             The names of available subsets.
         """
-        return [subset_name for subset_name in self.subsets]
+        return [subset_name for subset_name in self._subsets]
     
     def get_current_subset(self) -> 'Subset':
         """Get a current subset.
@@ -99,7 +108,17 @@ class ViewerDataset:
         List[BaseSample]
             The current subset.
         """
-        return self.subsets[self.current_subset]
+        return self._subsets[self._current_subset]
+    
+    def get_current_subset_name(self) -> str:
+        """Get a current subset name.
+
+        Returns
+        -------
+        str
+            The current subset name.
+        """
+        return self._current_subset
     
     def set_current_subset(self, subset_name: str):
         """Set a new value for current subset.
@@ -109,7 +128,7 @@ class ViewerDataset:
         subset_name : str
             The new value for current subset.
         """
-        self.current_subset = subset_name
+        self._current_subset = subset_name
 
     def next_sample(self) -> BaseSample:
         """Get a next sample of a current subset and increment its index.
@@ -122,7 +141,7 @@ class ViewerDataset:
         BaseSample
             The next sample of the current subset.
         """
-        return self.subsets[self.current_subset].next_sample()
+        return self._subsets[self._current_subset].next_sample()
     
     def previous_sample(self) -> BaseSample:
         """Get a previous sample of a current subset and decrement its index.
@@ -135,7 +154,7 @@ class ViewerDataset:
         BaseSample
             The previous sample of the current subset.
         """
-        return self.subsets[self.current_subset].previous_sample()
+        return self._subsets[self._current_subset].previous_sample()
     
     def get_current_sample(self) -> BaseSample:
         """Get a current sample of a current subset.
@@ -146,3 +165,13 @@ class ViewerDataset:
             The current sample of the current subset.
         """
         return self.get_current_subset().get_current_sample()
+    
+    def get_current_index(self) -> int:
+        """Get a current sample index of current subset.
+
+        Returns
+        -------
+        int
+            The current index of current subset.
+        """
+        return self.get_current_subset().get_current_index()
