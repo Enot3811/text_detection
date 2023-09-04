@@ -37,6 +37,16 @@ class BaseSample:
         self._img_pth = img_pth
         self._img_annots = img_annots
 
+    def get_image_path(self) -> Path:
+        """Get a source image's path.
+
+        Returns
+        -------
+        Path
+            The source image's path.
+        """
+        return self._img_pth
+
     def get_image(self) -> NDArray:
         """Get source image of this sample.
 
@@ -77,6 +87,7 @@ class BaseDataset:
         self._train_set: List[BaseSample]
         self._val_set: List[BaseSample]
         self._test_set: List[BaseSample]
+        self._labels: Optional[List[str]] = None
 
     def __getitem__(self, set_name: str) -> List[BaseSample]:
         if set_name == 'train':
@@ -87,3 +98,23 @@ class BaseDataset:
             return self._test_set
         else:
             raise KeyError('Available sets: "train", "val", "test".')
+        
+    def get_labels_names(self) -> List[str]:
+        """Get all labels names from this dataset.
+
+        First call of this function may take some time.
+
+        Returns
+        -------
+        List[str]
+            List of labels names.
+        """
+        if self._labels is not None:
+            return self._labels
+        # Iterate over whole dataset and collect all different languages
+        labels = set()
+        for subset in ('train', 'val', 'test'):
+            for sample in self[subset]:
+                for annot in sample.get_annotations():
+                    labels.add(annot.language)
+        return list(labels)
