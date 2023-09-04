@@ -13,12 +13,13 @@ def tensor_to_numpy(
 ) -> NDArray:
     """Convert tensor to numpy array.
 
-    If needed do permute for channel dimension: `(c, h, w)` -> `(h, w, c)`.
+    If needed do permute for channel dimension:
+    `(c, h, w)` -> `(h, w, c)` or `(b, c, h, w)` -> `(b, h, w, c)`.
 
     Parameters
     ----------
     data : Tensor
-        The input tensor to convert.
+        The input tensor to convert with shape `(c, h, w)` or `(b, c, h, w)`.
     permute_channel_dim : bool, optional
         Whether to permute channel dimension.
 
@@ -28,8 +29,14 @@ def tensor_to_numpy(
         Converted tensor.
     """
     data = data.detach().cpu()
-    if permute_channel_dim:
-        data = data.permute(1, 2, 0)
+    if len(data.shape) == 3:
+        if permute_channel_dim:
+            data = data.permute(1, 2, 0)
+    elif len(data.shape) == 4:
+        if permute_channel_dim:
+            data = data.permute(0, 2, 3, 1)
+    else:
+        raise ValueError('Input tensor must be 3D or 4D.')
     return data.numpy()
 
 
