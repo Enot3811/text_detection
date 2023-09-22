@@ -2,45 +2,34 @@
 
 
 from pathlib import Path
-import sys
 from typing import List, Union
 import xml.etree.ElementTree as ET
 
-sys.path.append(str(Path(__file__).parents[3]))
-from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseSample, BaseDataset)
+from utils.text_utils.datasets import (
+    BaseTextDetectionDataset,
+    BaseTextDetectionSample,
+    BaseTextDetectionAnnotation)
 
 
-class NEOCR_annotation(BaseAnnotation):
-    def __init__(
-        self, x1: int, y1: int, x2: int, y2: int, language: str, word: str
-    ) -> None:
-        super().__init__(x1, y1, x2, y2, language, word)
+class NEOCR_annotation(BaseTextDetectionAnnotation):
+    pass
 
 
-class NEOCR_sample(BaseSample):
-    def __init__(
-        self, img_pth: Path, img_annots: List[NEOCR_annotation]
-    ) -> None:
-        super().__init__(img_pth, img_annots)
+class NEOCR_sample(BaseTextDetectionSample):
+    pass
 
 
-class NEOCR_dataset(BaseDataset):
+class NEOCR_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
-        super().__init__()
-
-        if isinstance(dset_folder, str):
-            dset_folder = Path(dset_folder)
+        super().__init__(dset_folder)
 
         annots_dir = dset_folder / 'Annotations'
         img_dir = dset_folder / 'Images'
         annots_files = annots_dir.glob('*.xml')
 
-        self._train_set: List[NEOCR_sample] = [
+        self._subsets['train'] = [
             self.read_annotation_file(annots_file, img_dir)
             for annots_file in annots_files]
-        self._val_set = []
-        self._test_set = []
 
     def read_annotation_file(
         self, annot_pth: Path, img_dir: Path

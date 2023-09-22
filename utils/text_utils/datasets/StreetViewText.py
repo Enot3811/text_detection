@@ -2,16 +2,16 @@
 
 
 from pathlib import Path
-import sys
 from typing import List, Union
 import xml.etree.ElementTree as ET
 
-sys.path.append(str(Path(__file__).parents[3]))
-from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseSample, BaseDataset)
+from utils.text_utils.datasets import (
+    BaseTextDetectionAnnotation,
+    BaseTextDetectionSample,
+    BaseTextDetectionDataset)
 
 
-class SVT_annotation(BaseAnnotation):
+class SVT_annotation(BaseTextDetectionAnnotation):
 
     def __init__(
         self,
@@ -29,26 +29,18 @@ class SVT_annotation(BaseAnnotation):
         super().__init__(x1, y1, x2, y2, language, word)
 
 
-class SVT_sample(BaseSample):
-    def __init__(
-        self, img_pth: Path, img_annots: List[SVT_annotation]
-    ) -> None:
-        super().__init__(img_pth, img_annots)
+class SVT_sample(BaseTextDetectionSample):
+    pass
 
 
-class SVT_dataset(BaseDataset):
+class SVT_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
-        super().__init__()
-
-        if isinstance(dset_folder, str):
-            dset_folder = Path(dset_folder)
+        super().__init__(dset_folder)
 
         train_annots = dset_folder / 'train.xml'
         test_annots = dset_folder / 'test.xml'
-
-        self._train_set = self.read_set(train_annots, dset_folder)
-        self._test_set = self.read_set(test_annots, dset_folder)
-        self._val_set = []
+        self._subsets['train'] = self.read_set(train_annots, dset_folder)
+        self._subsets['test'] = self.read_set(test_annots, dset_folder)
 
     def read_set(
         self, set_annots: Path, dset_folder: Path

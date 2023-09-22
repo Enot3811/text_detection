@@ -1,21 +1,21 @@
 """MSRA TD500 dataset classes."""
 
 from pathlib import Path
-import sys
 from typing import Tuple, List, Union
 
-sys.path.append(str(Path(__file__).parents[3]))
-from utils.numpy_utils import rotate_rectangle
-from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseSample, BaseDataset)
+from utils.numpy_utils.numpy_functions import rotate_rectangle
+from utils.text_utils.datasets import (
+    BaseTextDetectionDataset,
+    BaseTextDetectionSample,
+    BaseTextDetectionAnnotation)
 
 
-class MSRA_TD500_annotation(BaseAnnotation):
+class MSRA_TD500_annotation(BaseTextDetectionAnnotation):
 
     def __init__(
-        self, annt_str: str
+        self, annot_str: str
     ) -> None:
-        idx, difficult, x, y, w, h, angle = annt_str.split()
+        idx, difficult, x, y, w, h, angle = annot_str.split()
         self.difficult = difficult == '1'
         self.idx = int(idx)
         
@@ -68,26 +68,18 @@ class MSRA_TD500_annotation(BaseAnnotation):
         return x1, y1, x2, y2
 
 
-class MSRA_TD500_sample(BaseSample):
-    def __init__(
-        self, img_pth: Path, img_annots: List[MSRA_TD500_annotation]
-    ) -> None:
-        super().__init__(img_pth, img_annots)
+class MSRA_TD500_sample(BaseTextDetectionSample):
+    pass
 
 
-class MSRA_TD500_dataset(BaseDataset):
+class MSRA_TD500_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
-        super().__init__()
-
-        if isinstance(dset_folder, str):
-            dset_folder = Path(dset_folder)
+        super().__init__(dset_folder)
 
         train_dir = dset_folder / 'train'
         test_dir = dset_folder / 'test'
-
-        self._train_set = self.read_set(train_dir)
-        self._test_set = self.read_set(test_dir)
-        self._val_set = []
+        self._subsets['train'] = self.read_set(train_dir)
+        self._subsets['test'] = self.read_set(test_dir)
 
     def read_set(self, set_dir: Path) -> List[MSRA_TD500_sample]:
         """Read a directory with a set, generate a list of samples.
@@ -108,8 +100,8 @@ class MSRA_TD500_dataset(BaseDataset):
         img_pths.sort()
 
         samples = []
-        for annt_file, img_pth in zip(annots_files, img_pths):
-            annots = self.read_annotation_file(annt_file)
+        for annot_file, img_pth in zip(annots_files, img_pths):
+            annots = self.read_annotation_file(annot_file)
             samples.append(MSRA_TD500_sample(img_pth, annots))
         return samples
 

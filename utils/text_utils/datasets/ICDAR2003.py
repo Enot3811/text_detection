@@ -2,16 +2,16 @@
 
 
 from pathlib import Path
-import sys
 from typing import List, Union
 import xml.etree.ElementTree as ET
 
-sys.path.append(str(Path(__file__).parents[3]))
-from utils.data_utils.datasets.base_dataset import (
-    BaseAnnotation, BaseSample, BaseDataset)
+from utils.text_utils.datasets import (
+    BaseTextDetectionDataset,
+    BaseTextDetectionSample,
+    BaseTextDetectionAnnotation)
 
 
-class ICDAR2003_annotation(BaseAnnotation):
+class ICDAR2003_annotation(BaseTextDetectionAnnotation):
 
     def __init__(
         self,
@@ -19,38 +19,31 @@ class ICDAR2003_annotation(BaseAnnotation):
         y: Union[int, float],
         w: Union[int, float],
         h: Union[int, float],
-        word: str
+        text: str
     ) -> None:
         x1 = int(x)
         y1 = int(y)
         x2 = x1 + int(w)
         y2 = y1 + int(h)
         language = 'english'
-        super().__init__(x1, y1, x2, y2, language, word)
+        super().__init__(x1, y1, x2, y2, language, text)
 
 
-class ICDAR2003_sample(BaseSample):
-    def __init__(
-        self, img_pth: Path, img_annots: List[ICDAR2003_annotation]
-    ) -> None:
-        super().__init__(img_pth, img_annots)
+class ICDAR2003_sample(BaseTextDetectionSample):
+    pass
 
 
-class ICDAR2003_dataset(BaseDataset):
+class ICDAR2003_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
-        super().__init__()
-
-        if isinstance(dset_folder, str):
-            dset_folder = Path(dset_folder)
+        super().__init__(dset_folder)
 
         train_dir = dset_folder / 'SceneTrialTrain'
         test_dir = dset_folder / 'SceneTrialTest'
         sample_dir = dset_folder / 'SceneTrialSample'
 
-        sample_set = self.read_set(sample_dir)
-        self._train_set = self.read_set(train_dir) + sample_set
-        self._test_set = self.read_set(test_dir)
-        self._val_set = []
+        self._subsets['sample'] = self.read_set(sample_dir)
+        self._subsets['train'] = self.read_set(train_dir)
+        self._subsets['test'] = self.read_set(test_dir)
 
     def read_set(self, set_dir: Path) -> List[ICDAR2003_sample]:
         """Read a directory with a set, generate a list of samples.
