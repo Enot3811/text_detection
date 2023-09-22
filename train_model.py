@@ -15,8 +15,9 @@ sys.path.append(str(Path(__file__).parents[2]))
 from dataset.object_detection_dataset import TextDetectionCocoDataset
 from rcnn.rcnn_model import RCNN_Detector
 from rcnn.rcnn_utils import draw_bounding_boxes_cv2
-from utils.metrics import calculate_iou, calculate_prediction_count_diff
-from utils.numpy_utils import tensor_to_numpy
+from utils.torch_utils.torch_metrics import (
+    calculate_iou, calculate_prediction_count_diff)
+from utils.torch_utils.torch_functions import image_tensor_to_numpy
 
 
 def main():
@@ -108,15 +109,15 @@ def main():
         optimizer.load_state_dict(optim_params)
     
     # Do training
-    model.train()
     best_loss = None
     for ep in range(start_ep, end_ep):
-        train_losses = [1.0]
+        train_losses = []
         val_losses = []
         iou_values = []
         n_pred_diff_values = []
 
         # Train pass
+        model.train()
         desc = f'Train epoch {ep}'
         for batch in tqdm(train_loader, desc=desc):
             images, gt_boxes, gt_classes = batch
@@ -162,7 +163,7 @@ def main():
                         save_image = (
                             images[i] * std.view((3, 1, 1)).to(device=device) +
                             mean.view((3, 1, 1)).to(device=device))
-                        save_image = tensor_to_numpy(save_image)
+                        save_image = image_tensor_to_numpy(save_image)
                         save_image = draw_bounding_boxes_cv2(
                             save_image, gt_boxes[i],
                             gt_classes[i].to(dtype=torch.int16),
