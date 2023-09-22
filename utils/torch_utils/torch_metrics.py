@@ -1,3 +1,6 @@
+"""The modula that contains metrics calculating functions."""
+
+
 from typing import List
 
 import torch
@@ -21,7 +24,7 @@ def calculate_iou(
     Returns
     -------
     FloatTensor
-        _description_
+        Calculated IoU scalar value.
     """
     # Calculate n objects in gt boxes
     n_objs = (gt_boxes >= 0).any(dim=2).sum(dim=1)
@@ -56,6 +59,7 @@ def calculate_prediction_count_diff(
     FloatTensor
         Mean difference between counts of predicts and ground truth bboxes.
     """
+    # TODO сделать описание получше
     gt_objs = (gt_boxes >= 0).any(dim=2).sum(dim=1, dtype=torch.float32)
     pred_objs = torch.tensor(list(map(len, predicted_boxes)),
                              dtype=torch.float32, device=gt_objs.device)
