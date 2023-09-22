@@ -1,31 +1,37 @@
-"""The module with helper functions for creating cvat annotations."""
+"""The module with helper functions for CVAT annotating."""
 
 
+from __future__ import annotations
 from xml.dom.minidom import Document
 import datetime
-from typing import List, Union
+from typing import List, Union, TYPE_CHECKING
 from pathlib import Path
 
 from tqdm import tqdm
 
-from datasets import BaseSample
+if TYPE_CHECKING:
+    from utils.data_utils.datasets import BaseObjectDetectionSample
 
 
 def create_cvat_meta(
-    xml_doc: Document, set_size: int, labels_names: List[str], set_name: str
+    xml_doc: Document, set_size: int, labels_names: List[str], subset_name: str
 ) -> None:
     """Create "meta" tag of cvat annotations.
+
+    Take meta information and write meta heder in CVAT format
+    to the given xml document.
 
     Parameters
     ----------
     xml_doc : Document
-        xml.dom.minidom.Document object.
+        An xml document for cvat annotations.
     set_size : int
         Number of images in the annotated set.
     labels_names : List[str]
         Labels names of annotated objects.
     set_name : str
         A name of the annotated set.
+        For example "train", "val" or something else.
     """
     date = datetime.datetime.now(datetime.timezone(datetime.timedelta()))
     annotations = xml_doc.createElement('annotations')
@@ -54,7 +60,7 @@ def create_cvat_meta(
     updated = xml_doc.createElement('updated')
     updated.appendChild(xml_doc.createTextNode(str(date)))
     subset = xml_doc.createElement('subset')
-    subset.appendChild(xml_doc.createTextNode(set_name))
+    subset.appendChild(xml_doc.createTextNode(subset_name))
     start_frame = xml_doc.createElement('start_frame')
     start_frame.appendChild(xml_doc.createTextNode('0'))
     stop_frame = xml_doc.createElement('stop_frame')
@@ -125,19 +131,24 @@ def create_cvat_meta(
     meta.appendChild(dumped)
 
 
-def create_cvat_images_annotations(
-    xml_doc: Document, set_samples: List[BaseSample], verbose: bool = False
+def create_cvat_object_detection_annotations(
+    xml_doc: Document,
+    set_samples: List[BaseObjectDetectionSample],
+    verbose: bool = False
 ) -> None:
-    """Create cvat image annotation.
+    """Create CVAT object detection annotations.
+
+    Take a list of samples and write images' annotations in CVAT format
+    to the given xml document.
 
     Parameters
     ----------
     xml_doc : Document
-        Xml document for cvat annotations.
+        An xml document for cvat annotations.
     set_samples : List[BaseSample]
-        
+        A set of samples.
     verbose : bool, optional
-        _description_, by default False
+        Whether to show progress of converting. By default is `False`.
     """
     iterator = enumerate(set_samples)
     if verbose:
@@ -165,18 +176,34 @@ def create_cvat_images_annotations(
         xml_doc.appendChild(image)
 
 
-def write_xml(xml_doc: Document, save_pth: Union[str, Path]):
-    """Save an xml document.
+def create_cvat_object_detection_xml(
+    save_pth: Union[str, Path],
+    set_samples: List[BaseObjectDetectionSample],
+    set_name: str,
+    set_labels: List[str],
+    verbose: bool = False
+):
+    """Save annotations as a CVAT xml document.
 
     Parameters
     ----------
     xml_doc : Document
         The xml document object.
     save_pth : Union[str, Path]
-        A save path.
+        An xml save path.
+    set_name : str
+        A name of saving set ("train", "val", etc).
+    set_labels : List[str]
+        a list of all set's labels.
+    verbose : bool, optional
+        Whether to show progress of converting. By default is `False`.
     """
     if isinstance(save_pth, str):
         save_pth = Path(str)
+    xml_doc = Document()
+    create_cvat_meta(xml_doc, len(set_samples), set_labels, set_name)
+    create_cvat_object_detection_annotations(xml_doc, set_samples, verbose)
+    
     save_pth.parent.mkdir(parents=True, exist_ok=True)
     xml_doc.writexml(open(save_pth, 'w'), indent="  ", addindent="  ",
                      newl='\n', encoding='utf-8')
