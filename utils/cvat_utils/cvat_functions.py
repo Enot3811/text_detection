@@ -150,9 +150,10 @@ def create_cvat_object_detection_annotations(
     verbose : bool, optional
         Whether to show progress of converting. By default is `False`.
     """
-    iterator = enumerate(set_samples)
+    iterator = list(enumerate(set_samples))
     if verbose:
         iterator = tqdm(iterator, desc='Forming cvat images annotations')
+    annots_tag = xml_doc.getElementsByTagName("annotations")[0]
     for i, sample in iterator:
         pth = sample.get_image_path()
         shape = sample.get_image().shape[:2]
@@ -160,20 +161,20 @@ def create_cvat_object_detection_annotations(
         image = xml_doc.createElement('image')
         image.setAttribute('id', str(i))
         image.setAttribute('name', pth.name)
-        image.setAttribute('width', shape[1])
-        image.setAttribute('height', shape[0])
+        image.setAttribute('width', str(shape[1]))
+        image.setAttribute('height', str(shape[0]))
         for annot in annots:
             box = xml_doc.createElement('box')
-            box.setAttribute('label', annot.language)
+            box.setAttribute('label', annot.label)
             box.setAttribute('occluded', '0')
             box.setAttribute('source', 'manual')
-            box.setAttribute('xtl', annot.x1)
-            box.setAttribute('ytl', annot.y1)
-            box.setAttribute('xbr', annot.x2)
-            box.setAttribute('ybr', annot.y2)
+            box.setAttribute('xtl', str(annot.x1))
+            box.setAttribute('ytl', str(annot.y1))
+            box.setAttribute('xbr', str(annot.x2))
+            box.setAttribute('ybr', str(annot.y2))
             box.setAttribute('z_order', '0')
             image.appendChild(box)
-        xml_doc.appendChild(image)
+        annots_tag.appendChild(image)
 
 
 def create_cvat_object_detection_xml(
