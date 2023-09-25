@@ -161,6 +161,8 @@ class BaseObjectDetectionDataset:
             Whether to copy images from original dataset to new CVAT.
             By default is `False`.
         """
+        if isinstance(save_pth, str):
+            save_pth = Path(save_pth)
         labels = self.get_labels_names()
         for subset_name, subset in self._subsets.items():
             subset_dir = save_pth / subset_name
