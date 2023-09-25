@@ -4,8 +4,9 @@
 from typing import List, Tuple, Union
 
 from numpy.typing import NDArray
-from torch import Tensor
 import cv2
+from torch import Tensor, tensor
+from torchvision.ops import box_convert
 
 
 def image_tensor_to_numpy(tensor: Tensor) -> NDArray:
@@ -44,15 +45,15 @@ def draw_bounding_boxes(
     ----------
     image : NDArray
         The given image with shape `(h, w, c)`.
-    bboxes : List[Tuple]
+    bboxes : List[List[Union[float, int]]]
         The bounding boxes with shape `(n_boxes, 4)`.
     class_labels : List, optional
         Bounding boxes' labels. By default is None.
     confidences : List, optional
         Bounding boxes' confidences. By default is None.
     bbox_format : str, optional
-        A bounding boxes' format (only xyxy is available).
-        By default is 'xyxy'.
+        A bounding boxes' format. It should be one of "xyxy", "xywh" or
+        "cxcywh". By default is 'xyxy'.
     line_width : int, optional
         A width of the bounding boxes' lines. By default is 1.
     color : Tuple[int, int, int], optional
@@ -66,13 +67,19 @@ def draw_bounding_boxes(
     Raises
     ------
     NotImplementedError
-        Only xyxy bounding boxes format is available.
+        Implemented only for "xyxy", "xywh" and "cxcywh"
+        bounding boxes formats.
     """
     image = image.copy()
+
+    # Convert to "xyxy"
     if bbox_format != 'xyxy':
-        # TODO
-        raise NotImplementedError(
-            'Only xyxy bounding boxes format is available.')
+        if bbox_format in ('xywh', 'cxcywh'):
+            bboxes = box_convert(tensor(bboxes), bbox_format, 'xyxy').tolist()
+        else:
+            raise NotImplementedError(
+                'Implemented only for "xyxy", "xywh" and "cxcywh"'
+                'bounding boxes formats.')
     
     for i, bbox in enumerate(bboxes):
         bbox = list(map(int, bbox))
