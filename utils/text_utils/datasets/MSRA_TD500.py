@@ -76,8 +76,8 @@ class MSRA_TD500_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
         super().__init__(dset_folder)
 
-        train_dir = dset_folder / 'train'
-        test_dir = dset_folder / 'test'
+        train_dir = self.dset_folder / 'train'
+        test_dir = self.dset_folder / 'test'
         self._subsets['train'] = self.read_set(train_dir)
         self._subsets['test'] = self.read_set(test_dir)
 

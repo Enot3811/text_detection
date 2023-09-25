@@ -37,8 +37,8 @@ class SVT_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
         super().__init__(dset_folder)
 
-        train_annots = dset_folder / 'train.xml'
-        test_annots = dset_folder / 'test.xml'
+        train_annots = self.dset_folder / 'train.xml'
+        test_annots = self.dset_folder / 'test.xml'
         self._subsets['train'] = self.read_set(train_annots, dset_folder)
         self._subsets['test'] = self.read_set(test_annots, dset_folder)
 

@@ -37,9 +37,9 @@ class ICDAR2003_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
         super().__init__(dset_folder)
 
-        train_dir = dset_folder / 'SceneTrialTrain'
-        test_dir = dset_folder / 'SceneTrialTest'
-        sample_dir = dset_folder / 'SceneTrialSample'
+        train_dir = self.dset_folder / 'SceneTrialTrain'
+        test_dir = self.dset_folder / 'SceneTrialTest'
+        sample_dir = self.dset_folder / 'SceneTrialSample'
 
         self._subsets['sample'] = self.read_set(sample_dir)
         self._subsets['train'] = self.read_set(train_dir)

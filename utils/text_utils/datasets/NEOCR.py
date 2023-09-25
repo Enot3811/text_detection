@@ -23,8 +23,8 @@ class NEOCR_dataset(BaseTextDetectionDataset):
     def __init__(self, dset_folder: Union[Path, str]) -> None:
         super().__init__(dset_folder)
 
-        annots_dir = dset_folder / 'Annotations'
-        img_dir = dset_folder / 'Images'
+        annots_dir = self.dset_folder / 'Annotations'
+        img_dir = self.dset_folder / 'Images'
         annots_files = annots_dir.glob('*.xml')
 
         self._subsets['train'] = [
