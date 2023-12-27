@@ -1,7 +1,6 @@
 """Training script."""
 
 from pathlib import Path
-import sys
 
 import torch
 import torch.optim as optim
@@ -11,7 +10,6 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 
-sys.path.append(str(Path(__file__).parents[2]))
 from dataset.object_detection_dataset import TextDetectionCocoDataset
 from rcnn.rcnn_model import RCNN_Detector
 from rcnn.rcnn_utils import draw_bounding_boxes_cv2
